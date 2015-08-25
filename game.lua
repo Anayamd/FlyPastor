@@ -21,6 +21,8 @@ physics.start()
 local composer = require( "composer" )
 local scene = composer.newScene()
 
+local mydata = require( "mydata" )
+
 --------------------------------------------------------------------------------------
 -- CREATE
 --------------------------------------------------------------------------------------
@@ -29,6 +31,9 @@ function scene:create(event)
 	
 	local sceneGroup = self.view
 	
+	gameStarted = false
+	mydata.score = 0
+	
 	local background = display.newImageRect("images/bg.png", display.viewableContentWidth, display.viewableContentHeight)
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
@@ -36,48 +41,19 @@ function scene:create(event)
 	
 	-------------------------------------------------------------------
 	-- Ceiling
-	ceiling1 = display.newImageRect("images/invisibleTile.png", 480, 25)
-	ceiling1.anchorX = 0
-	ceiling1.anchorY = 1
-	ceiling1.x = 0
-	ceiling1.y = 0
-	sceneGroup:insert(ceiling1)
+	ceiling = display.newImageRect("images/invisibleTileLarge.png", 480, 25)
+	ceiling.anchorX = 0
+	ceiling.anchorY = 1
+	ceiling.x = 0
+	ceiling.y = 0
+	sceneGroup:insert(ceiling)
 	
-	ceiling2 = display.newImageRect("images/invisibleTile.png", 480, 25)
-	ceiling2.anchorX = 0
-	ceiling2.anchorY = 1
-	ceiling2.x = 480
-	ceiling2.y = 0
-	sceneGroup:insert(ceiling2)
-	
-	ceiling3 = display.newImageRect("images/invisibleTile.png", 480, 25)
-	ceiling3.anchorX = 0
-	ceiling3.anchorY = 1
-	ceiling3.x = 480 * 2
-	ceiling3.y = 0
-	sceneGroup:insert(ceiling3)
-	
-	-- theFloor
-	theFloor1 = display.newImageRect("images/invisibleTile.png", 480, 25)
-	theFloor1.anchorX = 0
-	theFloor1.anchorY = 0
-	theFloor1.x = 0
-	theFloor1.y = display.viewableContentHeight
-	sceneGroup:insert(theFloor1)
-	
-	theFloor2 = display.newImageRect("images/invisibleTile.png", 480, 25)
-	theFloor2.anchorX = 0
-	theFloor2.anchorY = 0
-	theFloor2.x = 480
-	theFloor2.y = display.viewableContentHeight
-	sceneGroup:insert(theFloor2)
-	
-	theFloor3 = display.newImageRect("images/invisibleTile.png", 480, 25)
-	theFloor3.anchorX = 0
-	theFloor3.anchorY = 0
-	theFloor3.x = 480 * 2
-	theFloor3.y = display.viewableContentHeight
-	sceneGroup:insert(theFloor3)
+	theFloor = display.newImageRect("images/invisibleTileLarge.png", 480, 25)
+	theFloor.anchorX = 0
+	theFloor.anchorY = 0
+	theFloor.x = 0
+	theFloor.y = display.viewableContentHeight
+	sceneGroup:insert(theFloor)
 	
 	-------------------------------------------------------------------
 	-- Fondo de atrás
@@ -86,7 +62,7 @@ function scene:create(event)
 	backImg.anchorY = 1
 	backImg.x = 0
 	backImg.y = display.viewableContentHeight - 30
-	backImg.speed = .3
+	backImg.speed = 1
 	sceneGroup:insert(backImg)
 	
 	backImg2 = display.newImageRect("images/backLarge.png", display.contentWidth, 87)
@@ -94,7 +70,7 @@ function scene:create(event)
 	backImg2.anchorY = 1
 	backImg2.x = display.contentWidth
 	backImg2.y = display.viewableContentHeight - 30
-	backImg2.speed = .3
+	backImg2.speed = 1
 	sceneGroup:insert(backImg2)	
 	
 	-- Fondo de adelante
@@ -146,69 +122,72 @@ function scene:create(event)
 	
 	-- enemy1
 	enemy1 = display.newImageRect("images/mexican.png", 100, 100)
-	enemy1.x = display.contentCenterX + 270 + math.random(50,400)
-	enemy1.y = display.contentCenterY 
+	enemy1.x = display.contentWidth + math.random(50,500)
+	enemy1.y = display.contentCenterY
 	enemy1.initY = enemy1.y
 	enemy1.angle = math.random(1,360)
 	enemy1.amp = math.random(20,70)
-	enemy1.speed = math.random(3,4)
+	enemy1.speed = math.random(13,15)
+	sceneGroup:insert(enemy1)
 	
 	-- enemy2
-	enemy2 = display.newImageRect("images/mexican.png", 50, 50)
-	enemy2.x = display.contentCenterX + 270 + math.random(50,200)
-	enemy2.y = display.contentCenterY 
+	enemy2 = display.newImageRect("images/mexican.png", 100, 100)
+	enemy2.x = display.contentWidth + math.random(50,800)
+	enemy2.y = display.contentCenterY
 	enemy2.initY = enemy2.y
 	enemy2.angle = math.random(1,360)
 	enemy2.amp = math.random(20,70)
-	enemy2.speed = math.random(2,5)
+	enemy2.speed = math.random(12,15)
+	sceneGroup:insert(enemy2)
 	
 	-- enemy3
-	enemy3 = display.newImageRect("images/mexican.png", 50, 50)
-	enemy3.x = display.contentCenterX + 270 + math.random(200,300)
-	enemy3.y = display.contentCenterY 
+	enemy3 = display.newImageRect("images/mexican.png", 100, 100)
+	enemy3.x = display.contentWidth + math.random(200,1000)
+	enemy3.y = display.contentCenterY
 	enemy3.initY = enemy3.y
 	enemy3.angle = math.random(1,360)
 	enemy3.amp = math.random(20,70)
-	enemy3.speed = math.random(2,3)
+	enemy3.speed = math.random(15,18)
+	sceneGroup:insert(enemy3)
 	
 	-- enemyL1
 	local knifeSheetData = {width = 219.25, height = 219, numFrames = 4, sheetContentWidth = 877, sheetContentHeight = 219}
 	local knifeSheet = graphics.newImageSheet("images/knifeSprite.png", knifeSheetData)
 	local knifeSecuenceData = {
-		{name = "knifes",  start = 1, count = 4, time = 1000, loopCount = 0, loopDirection = "forward"}
+		{name = "knifes",  start = 1, count = 4, time = 700, loopCount = 0, loopDirection = "forward"}
 	}
 	enemyL1 = display.newSprite( knifeSheet, knifeSecuenceData )
-	enemyL1:scale( .15 , .15 )
-	enemyL1.x = display.contentCenterX + 270
-	enemyL1.y = display.contentCenterY - 50
-	enemyL1.speed = math.random(2,6)
+	enemyL1:scale( .35 , .35 )
+	enemyL1.x = display.contentWidth + 270
+	enemyL1.y = display.contentCenterY - math.random(30, 400)
+	enemyL1.speed = math.random(10,20)
 	enemyL1:play()
+	sceneGroup:insert(enemyL1)
 	
 	-- enemyL2
 	enemyL2 = display.newSprite( knifeSheet, knifeSecuenceData )
-	enemyL2:scale( .15 , .15 )
-	enemyL2.x = display.contentCenterX + 270
-	enemyL2.y = display.contentCenterY + 50
-	enemyL2.speed = math.random(2,6)
+	enemyL2:scale( .35 , .35 )
+	enemyL2.x = display.contentWidth + 270
+	enemyL2.y = display.contentCenterY + math.random(30, 400)
+	enemyL2.speed = math.random(10,20)
 	enemyL2:play()
+	sceneGroup:insert(enemyL2)
 	
+	-------------------------------------------------------------------
 	-- PHYSICS
-	--physics.addBody(enemy1, "static", {density=.1, bounce = 1, friction = .2, radius = 14 } )
-	--physics.addBody(enemy2, "static", {density=.1, bounce = 1, friction = .2, radius = 14 } )
-	--physics.addBody(enemy3, "static", {density=.1, bounce = 1, friction = .2, radius = 14 } )
-	--physics.addBody(enemyL1, "static", {density=.1, bounce = 3, friction = .2, radius = 12 } )
-	--physics.addBody(enemyL2, "static", {density=.1, bounce = 3, friction = .2, radius = 12 } )
-	--physics.addBody(ceiling, "static", {density=.1, bounce = 0.1, friction = .2 } )
-	--physics.addBody(theFloor, "static", {density=.1, bounce = 0.1, friction = .2 } )
-	--physics.addBody(player, "static", {density=.1, bounce = 1, friction = .2, radius = 12 } )	
-	
-	-- Group Insertion
-	--insertaAlGrupo( screenGroup, background, backImg, backImg2, frontImg, frontImg2, player, enemy1, enemy2, enemy3, enemyL1, enemyL2 )
-	--insertaAlGrupo( screenGroup, ceiling, theFloor, explosion)
+	physics.addBody(enemy1, "static", {density=.1, bounce = 1, friction = .2, radius = 33 } )
+	physics.addBody(enemy2, "static", {density=.1, bounce = 1, friction = .2, radius = 33 } )
+	physics.addBody(enemy3, "static", {density=.1, bounce = 1, friction = .2, radius = 33 } )
+	physics.addBody(enemyL1, "static", {density=.1, bounce = 3, friction = .2, radius = 25 } )
+	physics.addBody(enemyL2, "static", {density=.1, bounce = 3, friction = .2, radius = 25 } )
+	physics.addBody(ceiling, "static", {density=.1, bounce = 0.1, friction = .2 } )
+	physics.addBody(theFloor, "static", {density=.1, bounce = 0.1, friction = .2 } )
+	physics.addBody(player, "static", {density=.1, bounce = 1, friction = .2, radius = 25 } )
 	
 	-- score
-	--scoreText = display.newText( screenGroup, "0", display.contentCenterX, display.contentCenterY - 115, native.systemFontBold )
-	--scoreText:setFillColor( .95, .33, 0 )
+	scoreText = display.newText( sceneGroup, "0", display.contentCenterX, 30, native.systemFontBold, 40 )
+	scoreText:setFillColor( .95, .33, 0 )
+	scoreText.isVisible = false
 		
 	-- Initial Text
 	InitText = display.newText( sceneGroup, "FlyPastor", display.contentCenterX, display.contentCenterY - 50, native.systemFontBold, 90 )
@@ -216,19 +195,217 @@ function scene:create(event)
 	InitText:setFillColor( .95, .33, 0 )
 	HoldText:setFillColor( .95, .33, 0 )
 	
-	--SOUNDS
+	--[[SOUNDS
 	soundTable = {
 		scoreSound = audio.loadSound( "what_is_love_8_bit.mp3" ),
 		explosionSound = audio.loadSound( "explosion.wav" )
 	}
+	--]]
 end
 
+--------------------------------------------------------------------------------------
+-- FUNCTIONS
+--------------------------------------------------------------------------------------
+
+function groundScroller( self, event )
+	if self.x < (0 - display.contentWidth + 3) then
+		self.x = display.contentWidth
+	else
+		self.x = self.x - self.speed
+	end
+end
+
+-------------------------------------------------------------------
+function upScore()
+	if not player.collided then
+		mydata.score = mydata.score + 1
+		scoreText.text = mydata.score
+		--audio.play( soundTable["scoreSound"] )
+	end
+end
+
+-------------------------------------------------------------------
+function moveEnemy( self, event )
+	if gameStarted then
+		if self.x < (0 - display.contentWidth - 50) then
+			self.x = display.contentWidth + math.random(50,1000)
+			self.y = display.contentCenterY + math.random(-400,400)
+			self.angle = math.random(1,360)
+			self.amp = math.random(20,230)
+			self.speed = math.random(10,20)
+			upScore()
+		else
+			self.x = self.x - self.speed
+			self.angle = self.angle + .1
+			self.y = self.amp * math.sin(self.angle) + self.initY
+		end
+	end
+end
+
+-------------------------------------------------------------------
+function getMax()
+	if 1 == 500 then
+		return 0
+	end
+	return 500 - 1
+end
+
+-------------------------------------------------------------------
+function moveLinearly( self, event )
+	if gameStarted then
+		if self.x < (0 - display.contentWidth - 50) then
+			self.x = display.contentWidth + math.random(50,200)
+			self.y = display.contentCenterY + math.random(-400,400)
+			self.speed = math.random(10,20)
+			upScore()
+		else
+			self.x = self.x - self.speed
+		end
+	end
+end
+
+-------------------------------------------------------------------
+function flyUp(event)
+	if not gameStarted then
+		gameStarted = true
+		scoreText.isVisible = true		
+		transition.fadeOut( InitText, { time=1000 } )
+		transition.fadeOut( HoldText, { time=1000 } )
+		player.bodyType = "dynamic"
+		player.gravityScale = 0
+		player:play()
+	end
+	if event.phase == "began" then
+		player:setLinearVelocity(0, -400)
+	end
+	if event.phase == "ended" then
+		Runtime:removeEventListener("enterFrame", player)
+		player:setLinearVelocity(0, 400)
+	end
+end
+
+-------------------------------------------------------------------
+function explode()
+	explosion.x = player.x
+	explosion.y = player.y
+	explosion.isVisible = true
+	explosion:play()
+end
+
+-------------------------------------------------------------------
+function gameOver()
+	local options = { effect = "fade", time = 400 }
+	composer.gotoScene("restart", options)
+end
+
+-------------------------------------------------------------------
+function onCollision( event )
+	if event.phase == "began" then
+		if not player.collided then
+			--audio.play( soundTable["explosionSound"] )
+			player.collided = true
+			player:setSequence("hit")
+			player.bodyType = "static"
+			explode()
+			timer.performWithDelay( 1000, gameOver, 1 )
+		end
+	end
+end
+
+-------------------------------------------------------------------
+local function checkMemory()
+	collectgarbage( "collect" )
+	local memUsage_str = string.format( "MEMORY = %.3f KB", collectgarbage( "count" ) )
+end
+
+--------------------------------------------------------------------------------------
+-- SCENES
+--------------------------------------------------------------------------------------
+
+function scene:show(event)
+	
+	local sceneGroup = self.view
+	local phase = event.phase
+	
+	if ( phase == "will" ) then
+		-- Do nothing
+	elseif ( phase == "did" ) then
+		-- Called when the scene is now on screen.
+		-- Example: start timers, begin animation, play audio, etc.
+		composer.removeScene( "restart" )
+		
+		Runtime:addEventListener("touch", flyUp)
+		
+		backImg.enterFrame = groundScroller
+		Runtime:addEventListener("enterFrame", backImg)
+		
+		backImg2.enterFrame = groundScroller
+		Runtime:addEventListener("enterFrame", backImg2)
+		
+		frontImg.enterFrame = groundScroller
+		Runtime:addEventListener("enterFrame", frontImg)
+		
+		frontImg2.enterFrame = groundScroller
+		Runtime:addEventListener("enterFrame", frontImg2)
+		
+		enemy1.enterFrame = moveEnemy
+		Runtime:addEventListener("enterFrame", enemy1)
+		
+		enemy2.enterFrame = moveEnemy
+		Runtime:addEventListener("enterFrame", enemy2)
+		
+		enemy3.enterFrame = moveEnemy
+		Runtime:addEventListener("enterFrame", enemy3)
+		
+		enemyL1.enterFrame = moveLinearly
+		Runtime:addEventListener("enterFrame", enemyL1)
+		
+		enemyL2.enterFrame = moveLinearly
+		Runtime:addEventListener("enterFrame", enemyL2)
+		
+		Runtime:addEventListener("collision", onCollision)
+		
+		memTimer = timer.performWithDelay( 1000, checkMemory, 0 )
+	end
+end
+
+--------------------------------------------------------
+function scene:hide(event)
+	
+	local sceneGroup = self.view
+	local phase = event.phase
+	
+	if ( phase == "will" ) then
+		Runtime:removeEventListener("touch", flyUp)
+		Runtime:removeEventListener("enterFrame", backImg)
+		Runtime:removeEventListener("enterFrame", backImg2)
+		Runtime:removeEventListener("enterFrame", frontImg)
+		Runtime:removeEventListener("enterFrame", frontImg2)
+		Runtime:removeEventListener("enterFrame", enemy1)
+		Runtime:removeEventListener("enterFrame", enemy2)
+		Runtime:removeEventListener("enterFrame", enemy3)
+		Runtime:removeEventListener("enterFrame", enemyL1)
+		Runtime:removeEventListener("enterFrame", enemyL2)
+		Runtime:removeEventListener("collision", onCollision)
+		--timer.cancel(gameOver)
+	elseif ( phase == "did" ) then
+		-- Do nothing
+	end	
+end
+
+--------------------------------------------------------
+function scene:destroy(event)
+	-- Does nothing
+end
 
 --------------------------------------------------------------------------------------
 -- SCENES CREATION
 --------------------------------------------------------------------------------------
 
 scene:addEventListener("create", scene)
+scene:addEventListener("show", scene)
+scene:addEventListener("hide", scene)
+scene:addEventListener("destroy", scene)
 
 --------------------------------------------------------------------------------------
 

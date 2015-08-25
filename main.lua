@@ -13,5 +13,5 @@ display.setStatusBar(display.HiddenStatusBar)
 local composer = require "composer"
 
 -- gotoScene Game
-local options = { effect = "fade", time = 2000 }
+local options = { effect = "fade", time = 1500 }
 composer.gotoScene("game", options)	
