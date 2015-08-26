@@ -40,9 +40,10 @@ function scene:create( event )
     sceneGroup:insert(scoreBg)
 	
 	restart = display.newImageRect("images/start_btn.png",300,65)
+	restart.anchorX = 1
 	restart.anchorY = 1
-	restart.x = display.contentCenterX
-	restart.y = display.contentCenterY + 400
+	restart.x = display.viewableContentWidth
+	restart.y = display.viewableContentHeight - 50
 	restart.alpha = 0
 	sceneGroup:insert(restart)
 	
@@ -76,7 +77,7 @@ end
 function restartGame( event )
 	if event.phase == "ended" then
 		saveScore()
-		composer.gotoScene( "start" )
+		composer.gotoScene( "game" )
 	end
 end
 

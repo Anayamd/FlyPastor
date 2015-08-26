@@ -16,7 +16,7 @@ local gameStarted = false
 
 local physics = require "physics"
 physics.start()
---physics.setDrawMode("hybrid")
+physics.setDrawMode("hybrid")
 
 local composer = require( "composer" )
 local scene = composer.newScene()
@@ -101,6 +101,7 @@ function scene:create(event)
 	player.x = 150
 	player.y = display.contentCenterY
 	player.collided = false
+	player.myName = "player"
 	sceneGroup:insert(player)
 	
 	-------------------------------------------------------------------
@@ -119,36 +120,6 @@ function scene:create(event)
 	
 	-------------------------------------------------------------------
 	--ENEMIES
-	
-	-- enemy1
-	enemy1 = display.newImageRect("images/mexican.png", 100, 100)
-	enemy1.x = display.contentWidth + math.random(50,500)
-	enemy1.y = display.contentCenterY
-	enemy1.initY = enemy1.y
-	enemy1.angle = math.random(1,360)
-	enemy1.amp = math.random(20,70)
-	enemy1.speed = math.random(13,15)
-	sceneGroup:insert(enemy1)
-	
-	-- enemy2
-	enemy2 = display.newImageRect("images/mexican.png", 100, 100)
-	enemy2.x = display.contentWidth + math.random(50,800)
-	enemy2.y = display.contentCenterY
-	enemy2.initY = enemy2.y
-	enemy2.angle = math.random(1,360)
-	enemy2.amp = math.random(20,70)
-	enemy2.speed = math.random(12,15)
-	sceneGroup:insert(enemy2)
-	
-	-- enemy3
-	enemy3 = display.newImageRect("images/mexican.png", 100, 100)
-	enemy3.x = display.contentWidth + math.random(200,1000)
-	enemy3.y = display.contentCenterY
-	enemy3.initY = enemy3.y
-	enemy3.angle = math.random(1,360)
-	enemy3.amp = math.random(20,70)
-	enemy3.speed = math.random(15,18)
-	sceneGroup:insert(enemy3)
 	
 	-- enemyL1
 	local knifeSheetData = {width = 219.25, height = 219, numFrames = 4, sheetContentWidth = 877, sheetContentHeight = 219}
@@ -175,14 +146,14 @@ function scene:create(event)
 	
 	-------------------------------------------------------------------
 	-- PHYSICS
-	physics.addBody(enemy1, "static", {density=.1, bounce = 1, friction = .2, radius = 33 } )
-	physics.addBody(enemy2, "static", {density=.1, bounce = 1, friction = .2, radius = 33 } )
-	physics.addBody(enemy3, "static", {density=.1, bounce = 1, friction = .2, radius = 33 } )
 	physics.addBody(enemyL1, "static", {density=.1, bounce = 3, friction = .2, radius = 25 } )
 	physics.addBody(enemyL2, "static", {density=.1, bounce = 3, friction = .2, radius = 25 } )
 	physics.addBody(ceiling, "static", {density=.1, bounce = 0.1, friction = .2 } )
 	physics.addBody(theFloor, "static", {density=.1, bounce = 0.1, friction = .2 } )
 	physics.addBody(player, "static", {density=.1, bounce = 1, friction = .2, radius = 25 } )
+	
+	-------------------------------------------------------------------
+	-- TEXT
 	
 	-- score
 	scoreText = display.newText( sceneGroup, "0", display.contentCenterX, 30, native.systemFontBold, 40 )
@@ -195,12 +166,26 @@ function scene:create(event)
 	InitText:setFillColor( .95, .33, 0 )
 	HoldText:setFillColor( .95, .33, 0 )
 	
-	--[[SOUNDS
-	soundTable = {
-		scoreSound = audio.loadSound( "what_is_love_8_bit.mp3" ),
-		explosionSound = audio.loadSound( "explosion.wav" )
-	}
-	--]]
+	-------------------------------------------------------------------
+	-- SUBGROUPS
+	
+	-- Enemies Group
+	elements = display.newGroup()
+	elements.anchorChildren = true
+	elements.anchorX = 0.5
+	elements.anchorY = 0.5
+	elements.x = 0
+	elements.y = 0
+	sceneGroup:insert(elements)
+	
+	-- Enemies Group
+	coins = display.newGroup()
+	coins.anchorChildren = true
+	coins.anchorX = 0.5
+	coins.anchorY = 0.5
+	coins.x = 0
+	coins.y = 0
+	sceneGroup:insert(coins)
 end
 
 --------------------------------------------------------------------------------------
@@ -225,43 +210,64 @@ function upScore()
 end
 
 -------------------------------------------------------------------
-function moveEnemy( self, event )
+function moveCoins()
 	if gameStarted then
-		if self.x < (0 - display.contentWidth - 50) then
-			self.x = display.contentWidth + math.random(50,1000)
-			self.y = display.contentCenterY + math.random(-400,400)
-			self.angle = math.random(1,360)
-			self.amp = math.random(20,230)
-			self.speed = math.random(10,20)
-			upScore()
-		else
-			self.x = self.x - self.speed
-			self.angle = self.angle + .1
-			self.y = self.amp * math.sin(self.angle) + self.initY
+		for j = coins.numChildren,1,-1  do
+			if coins[j].x < (0 - display.contentWidth - 50) then
+				coins:remove(coins[j])
+				coins[j] = nil
+				--upScore()
+			else
+				coins[j].x = coins[j].x - coins[j].speed
+			end
 		end
 	end
 end
 
 -------------------------------------------------------------------
-function getMax()
-	if 1 == 500 then
-		return 0
-	end
-	return 500 - 1
+function addCoin()
+	coin = display.newImageRect("images/molcajete.png", 70, 70)
+	coin.x = display.contentWidth + math.random(50,200)
+	coin.y = display.contentCenterY + math.random(-300,300)
+	coin.speed = 10
+	coin.myName = "coin"
+	physics.addBody(coin, "static", {density=.1, bounce = 1, friction = .2} )
+	coin.isSensor = true
+	coins:insert(coin)
 end
 
 -------------------------------------------------------------------
-function moveLinearly( self, event )
+function moveEnemy()
 	if gameStarted then
-		if self.x < (0 - display.contentWidth - 50) then
-			self.x = display.contentWidth + math.random(50,200)
-			self.y = display.contentCenterY + math.random(-400,400)
-			self.speed = math.random(10,20)
-			upScore()
-		else
-			self.x = self.x - self.speed
+		for a = elements.numChildren,1,-1  do
+			if elements[a].x < (0 - display.contentWidth - 50) then
+				elements:remove(elements[a])
+				elements[a] = nil
+				--upScore()
+			else
+				elements[a].x = elements[a].x - elements[a].speed
+				elements[a].angle = elements[a].angle + .1
+				elements[a].y = elements[a].amp * math.sin(elements[a].angle) + elements[a].initY
+			end
 		end
 	end
+end
+
+-------------------------------------------------------------------
+function addEnemy()
+	enemy = display.newImageRect("images/mexican.png", 100, 100)
+	enemy.x = display.contentWidth + math.random(50,1000)
+	enemy.y = display.contentCenterY + math.random(-300,300)
+	enemy.initY = enemy.y
+	enemy.angle = math.random(1,360)
+	if enemy.y > display.contentCenterY then
+		enemy.amp = math.random(10,(display.viewableContentHeight - enemy.y - 15))
+	else
+		enemy.amp = math.random(10,enemy.y - 15)
+	end
+	enemy.speed = math.random(10,20)
+	physics.addBody(enemy, "static", {density=.1, bounce = 1, friction = .2, radius = 33 } )
+	elements:insert(enemy)
 end
 
 -------------------------------------------------------------------
@@ -274,6 +280,10 @@ function flyUp(event)
 		player.bodyType = "dynamic"
 		player.gravityScale = 0
 		player:play()
+		addEnemyTimer = timer.performWithDelay(2000 - mydata.score, addEnemy, -1)
+		moveEnemyTimer = timer.performWithDelay(2, moveEnemy, -1)
+		addCoinTimer = timer.performWithDelay(1500, addCoin, -1)
+		moveCoinsTimer = timer.performWithDelay(2, moveCoins, -1)
 	end
 	if event.phase == "began" then
 		player:setLinearVelocity(0, -400)
@@ -281,6 +291,20 @@ function flyUp(event)
 	if event.phase == "ended" then
 		Runtime:removeEventListener("enterFrame", player)
 		player:setLinearVelocity(0, 400)
+	end
+end
+
+-------------------------------------------------------------------
+function moveLinearly( self, event )
+	if gameStarted then
+		if self.x < (0 - display.contentWidth - 50) then
+			self.x = display.contentWidth + math.random(50,200)
+			self.y = display.contentCenterY + math.random(-400,400)
+			self.speed = math.random(10,20)
+			--upScore()
+		else
+			self.x = self.x - self.speed
+		end
 	end
 end
 
@@ -302,12 +326,23 @@ end
 function onCollision( event )
 	if event.phase == "began" then
 		if not player.collided then
+			if event.object1.myName == "coin" or event.object2.myName == "coin" then
+				if event.object1.myName == "coin" then
+					event.object1:removeSelf()
+					event.object1 = nil
+				else
+					event.object2:removeSelf()
+					event.object2 = nil
+				end
+				upScore()
+			else
+				player.collided = true
+				player:setSequence("hit")
+				player.bodyType = "static"
+				explode()
+				gameOverTimer = timer.performWithDelay( 1000, gameOver, 1 )
+			end
 			--audio.play( soundTable["explosionSound"] )
-			player.collided = true
-			player:setSequence("hit")
-			player.bodyType = "static"
-			explode()
-			timer.performWithDelay( 1000, gameOver, 1 )
 		end
 	end
 end
@@ -347,16 +382,7 @@ function scene:show(event)
 		
 		frontImg2.enterFrame = groundScroller
 		Runtime:addEventListener("enterFrame", frontImg2)
-		
-		enemy1.enterFrame = moveEnemy
-		Runtime:addEventListener("enterFrame", enemy1)
-		
-		enemy2.enterFrame = moveEnemy
-		Runtime:addEventListener("enterFrame", enemy2)
-		
-		enemy3.enterFrame = moveEnemy
-		Runtime:addEventListener("enterFrame", enemy3)
-		
+				
 		enemyL1.enterFrame = moveLinearly
 		Runtime:addEventListener("enterFrame", enemyL1)
 		
@@ -381,13 +407,15 @@ function scene:hide(event)
 		Runtime:removeEventListener("enterFrame", backImg2)
 		Runtime:removeEventListener("enterFrame", frontImg)
 		Runtime:removeEventListener("enterFrame", frontImg2)
-		Runtime:removeEventListener("enterFrame", enemy1)
-		Runtime:removeEventListener("enterFrame", enemy2)
-		Runtime:removeEventListener("enterFrame", enemy3)
 		Runtime:removeEventListener("enterFrame", enemyL1)
 		Runtime:removeEventListener("enterFrame", enemyL2)
 		Runtime:removeEventListener("collision", onCollision)
-		--timer.cancel(gameOver)
+		timer.cancel(gameOverTimer)
+		timer.cancel(memTimer)
+		timer.cancel(addEnemyTimer)
+		timer.cancel(moveEnemyTimer)
+		timer.cancel(addCoinTimer)
+		timer.cancel(moveCoinsTimer)		
 	elseif ( phase == "did" ) then
 		-- Do nothing
 	end	
