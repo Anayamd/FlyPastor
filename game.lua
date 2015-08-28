@@ -16,7 +16,7 @@ local gameStarted = false
 
 local physics = require "physics"
 physics.start()
-physics.setDrawMode("hybrid")
+--physics.setDrawMode("hybrid")
 
 local composer = require( "composer" )
 local scene = composer.newScene()
@@ -62,7 +62,7 @@ function scene:create(event)
 	backImg.anchorY = 1
 	backImg.x = 0
 	backImg.y = display.viewableContentHeight - 30
-	backImg.speed = 1
+	backImg.speed = 3
 	sceneGroup:insert(backImg)
 	
 	backImg2 = display.newImageRect("images/backLarge.png", display.contentWidth, 87)
@@ -70,7 +70,7 @@ function scene:create(event)
 	backImg2.anchorY = 1
 	backImg2.x = display.contentWidth
 	backImg2.y = display.viewableContentHeight - 30
-	backImg2.speed = 1
+	backImg2.speed = 3
 	sceneGroup:insert(backImg2)	
 	
 	-- Fondo de adelante
@@ -78,14 +78,14 @@ function scene:create(event)
 	frontImg.anchorX = 0
 	frontImg.x = 0
 	frontImg.y = display.viewableContentHeight - 50
-	frontImg.speed = 2
+	frontImg.speed = 9
 	sceneGroup:insert(frontImg)
 	
 	frontImg2 = display.newImageRect("images/frontLarge.png", display.contentWidth, 58)
 	frontImg2.anchorX = 0
 	frontImg2.x = display.contentWidth
 	frontImg2.y = display.viewableContentHeight - 50
-	frontImg2.speed = 2
+	frontImg2.speed = 9
 	sceneGroup:insert(frontImg2)
 	
 	-------------------------------------------------------------------
@@ -166,8 +166,26 @@ function scene:create(event)
 	InitText:setFillColor( .95, .33, 0 )
 	HoldText:setFillColor( .95, .33, 0 )
 	
+	--Grab images
+	instructions = display.newImageRect("images/instructions.png", 400,70)
+	instructions.anchorY = 0
+	instructions.x = display.contentCenterX + 15
+	instructions.y = display.contentCenterY + 120 
+	
 	-------------------------------------------------------------------
 	-- SUBGROUPS
+	
+	--Before play
+	before = display.newGroup()
+	before.anchorChildren = true
+	before.anchorX = 0.5
+	before.anchorY = 0.5
+	before.x = display.contentCenterX
+	before.y = display.contentCenterY
+	sceneGroup:insert(before)
+	before:insert(InitText)
+	before:insert(HoldText)
+	before:insert(instructions)
 	
 	-- Enemies Group
 	elements = display.newGroup()
@@ -201,11 +219,10 @@ function groundScroller( self, event )
 end
 
 -------------------------------------------------------------------
-function upScore()
+function upScore( num )
 	if not player.collided then
-		mydata.score = mydata.score + 1
+		mydata.score = mydata.score + num
 		scoreText.text = mydata.score
-		--audio.play( soundTable["scoreSound"] )
 	end
 end
 
@@ -216,7 +233,6 @@ function moveCoins()
 			if coins[j].x < (0 - display.contentWidth - 50) then
 				coins:remove(coins[j])
 				coins[j] = nil
-				--upScore()
 			else
 				coins[j].x = coins[j].x - coins[j].speed
 			end
@@ -226,7 +242,17 @@ end
 
 -------------------------------------------------------------------
 function addCoin()
-	coin = display.newImageRect("images/molcajete.png", 70, 70)
+	probability = math.random(1,100)
+	if (probability <= 10) then
+		coin = display.newImageRect("images/ranch.png", 40, 50)
+		coin.value = 10
+	elseif probability <= 30 then
+		coin = display.newImageRect("images/molcajete.png", 60, 50)
+		coin.value = 5
+	else
+		coin = display.newImageRect("images/chile.png", 40, 70)
+		coin.value = 1
+	end
 	coin.x = display.contentWidth + math.random(50,200)
 	coin.y = display.contentCenterY + math.random(-300,300)
 	coin.speed = 10
@@ -243,7 +269,6 @@ function moveEnemy()
 			if elements[a].x < (0 - display.contentWidth - 50) then
 				elements:remove(elements[a])
 				elements[a] = nil
-				--upScore()
 			else
 				elements[a].x = elements[a].x - elements[a].speed
 				elements[a].angle = elements[a].angle + .1
@@ -275,14 +300,14 @@ function flyUp(event)
 	if not gameStarted then
 		gameStarted = true
 		scoreText.isVisible = true		
-		transition.fadeOut( InitText, { time=1000 } )
-		transition.fadeOut( HoldText, { time=1000 } )
+		transition.fadeOut( before, { time=1000 } )
+		before = nil
 		player.bodyType = "dynamic"
 		player.gravityScale = 0
 		player:play()
-		addEnemyTimer = timer.performWithDelay(2000 - mydata.score, addEnemy, -1)
+		addEnemyTimer = timer.performWithDelay(2000 - mydata.score * 5, addEnemy, -1)
 		moveEnemyTimer = timer.performWithDelay(2, moveEnemy, -1)
-		addCoinTimer = timer.performWithDelay(1500, addCoin, -1)
+		addCoinTimer = timer.performWithDelay(2000, addCoin, -1)
 		moveCoinsTimer = timer.performWithDelay(2, moveCoins, -1)
 	end
 	if event.phase == "began" then
@@ -301,7 +326,6 @@ function moveLinearly( self, event )
 			self.x = display.contentWidth + math.random(50,200)
 			self.y = display.contentCenterY + math.random(-400,400)
 			self.speed = math.random(10,20)
-			--upScore()
 		else
 			self.x = self.x - self.speed
 		end
@@ -328,13 +352,14 @@ function onCollision( event )
 		if not player.collided then
 			if event.object1.myName == "coin" or event.object2.myName == "coin" then
 				if event.object1.myName == "coin" then
+					upScore(event.object1.value)
 					event.object1:removeSelf()
 					event.object1 = nil
 				else
+					upScore(event.object2.value)
 					event.object2:removeSelf()
 					event.object2 = nil
 				end
-				upScore()
 			else
 				player.collided = true
 				player:setSequence("hit")
@@ -342,7 +367,6 @@ function onCollision( event )
 				explode()
 				gameOverTimer = timer.performWithDelay( 1000, gameOver, 1 )
 			end
-			--audio.play( soundTable["explosionSound"] )
 		end
 	end
 end
@@ -365,8 +389,6 @@ function scene:show(event)
 	if ( phase == "will" ) then
 		-- Do nothing
 	elseif ( phase == "did" ) then
-		-- Called when the scene is now on screen.
-		-- Example: start timers, begin animation, play audio, etc.
 		composer.removeScene( "restart" )
 		
 		Runtime:addEventListener("touch", flyUp)
@@ -391,7 +413,7 @@ function scene:show(event)
 		
 		Runtime:addEventListener("collision", onCollision)
 		
-		memTimer = timer.performWithDelay( 1000, checkMemory, 0 )
+		memTimer = timer.performWithDelay( 2000, checkMemory, 0 )
 	end
 end
 
