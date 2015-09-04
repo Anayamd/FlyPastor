@@ -166,11 +166,17 @@ function scene:create(event)
 	InitText:setFillColor( .95, .33, 0 )
 	HoldText:setFillColor( .95, .33, 0 )
 	
-	--Grab images
+	-- Grab images
 	instructions = display.newImageRect("images/instructions.png", 400,70)
 	instructions.anchorY = 0
 	instructions.x = display.contentCenterX + 15
-	instructions.y = display.contentCenterY + 120 
+	instructions.y = display.contentCenterY + 120
+	
+	-- Up score
+	upScoreText = display.newText( sceneGroup, "0", display.contentCenterX, display.contentCenterY, native.systemFontBold, 25 )
+	upScoreText:setFillColor( .95, .33, 0 )
+	sceneGroup:insert(upScoreText)
+	transition.to(upScoreText,{time=100,alpha=0})
 	
 	-------------------------------------------------------------------
 	-- SUBGROUPS
@@ -219,10 +225,19 @@ function groundScroller( self, event )
 end
 
 -------------------------------------------------------------------
+function fadeText(e)
+  transition.to(upScoreText,{time=1000,alpha=0})
+end
+
+-------------------------------------------------------------------
 function upScore( num )
 	if not player.collided then
 		mydata.score = mydata.score + num
 		scoreText.text = mydata.score
+		upScoreText.x, upScoreText.y = player.x + 100, player.y
+		upScoreText.text = "+".. num
+		print(upScoreText.text)
+		transition.to( upScoreText, {time=0,alpha=1, onComplete=fadeText})
 	end
 end
 
@@ -437,7 +452,8 @@ function scene:hide(event)
 		timer.cancel(addEnemyTimer)
 		timer.cancel(moveEnemyTimer)
 		timer.cancel(addCoinTimer)
-		timer.cancel(moveCoinsTimer)		
+		timer.cancel(moveCoinsTimer)
+		transition.cancel()		
 	elseif ( phase == "did" ) then
 		-- Do nothing
 	end	
