@@ -90,6 +90,7 @@ function scene:create(event)
 	
 	-------------------------------------------------------------------
 	-- PLAYER
+	--[[
 	local sheetData = {width = 224, height = 224, numFrames = 5, sheetContentWidth = 1120, sheetContentHeight = 224}
 	local mySheet = graphics.newImageSheet("images/pastorSprite.png", sheetData)
 	local secuenceData = {
@@ -98,6 +99,8 @@ function scene:create(event)
 	}
 	player = display.newSprite( mySheet, secuenceData )
 	player:scale( .35 , .35 )
+	--]]
+	player = display.newImageRect("images/player.png", 70, 70)
 	player.x = 150
 	player.y = display.contentCenterY
 	player.collided = false
@@ -319,7 +322,7 @@ function flyUp(event)
 		before = nil
 		player.bodyType = "dynamic"
 		player.gravityScale = 0
-		player:play()
+		--player:play()
 		addEnemyTimer = timer.performWithDelay(2000 - mydata.score * 5, addEnemy, -1)
 		moveEnemyTimer = timer.performWithDelay(2, moveEnemy, -1)
 		addCoinTimer = timer.performWithDelay(2000, addCoin, -1)
@@ -377,7 +380,7 @@ function onCollision( event )
 				end
 			else
 				player.collided = true
-				player:setSequence("hit")
+				--player:setSequence("hit")
 				player.bodyType = "static"
 				explode()
 				gameOverTimer = timer.performWithDelay( 1000, gameOver, 1 )
