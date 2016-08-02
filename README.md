@@ -1,2 +1,5 @@
-# flyfly
-Estoes flyfly (nombre clave) nomas pa los cuates
+# FlyPastor
+
+Un videojuego hecho con Lua y Corona SDK.
+
+> Aún en desarrollo, falta diseño de escenas y personajes
